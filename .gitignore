@@ -1,7 +1,7 @@
 # The following are files that contain sensitive information that are already not stored in environment variables
 
 # Test file testing purposes (contains student data)
-Text.xlsx
+Test.xlsx
 
 # The following is a json file that is auto generated when making a Google Cloud project @ console.cloud.google.com
 # This file is needed to communicate with the Google Sheet containing Student/Parent/Guardian contact info

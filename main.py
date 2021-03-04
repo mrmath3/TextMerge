@@ -3,6 +3,8 @@ main_start_time = time.time()
 from google_sheets import database, teacher_settings, get_settings, write_log
 from low_grades import get_low_grades
 from send_text import send_text_message
+from datetime import datetime
+from pytz import timezone
 
 # List of teachers to check (names should match the names of the tabs in the 'teacher settings' Google Spreadsheet)
 teacher_list = [
@@ -142,13 +144,16 @@ def textMerge(teacher):
 
 def check_teachers(sc, teacher_list):
 	check_time = time.time()
+	t = datetime.now().astimezone(timezone("America/Los_Angeles")).strftime('%-m/%-d @ %-I:%M%p:')
 	for teacher in teacher_list:
 		print(f'Checking {teacher}...')
 		textMerge(teacher)
-	print(f'Completed check in {(time.time() - check_time):.2f} seconds. Waiting {(wait / 60):.0f} minutes until the next check.')
-	s.enter(wait, 1, textMerge, (sc, teacher_list))
+	print(f'{t} Completed check in {(time.time() - check_time):.2f} seconds. Waiting {(wait / 60):.0f} minutes until the next check.')
+	s.enter(wait, 1, check_teachers, (sc, teacher_list))
 
-print(f'Running TextMerge for the following list of teachers: {list_to_string(teacher_list)}.')
+
+t = datetime.now().astimezone(timezone("America/Los_Angeles")).strftime('%-m/%-d @ %-I:%M%p:')
+print(f'{t} Running TextMerge for the following list of teachers: {list_to_string(teacher_list)}.')
 s = sched.scheduler(time.time, time.sleep)
 s.enter(0, 1, check_teachers, (s,teacher_list))
 s.run()
