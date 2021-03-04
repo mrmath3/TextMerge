@@ -7,6 +7,7 @@ from pytz import timezone
 scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
 
 # add credentials to the account
+# make sure your own .json file is generated from your Google Cloud project
 creds = ServiceAccountCredentials.from_json_keyfile_name('TextMerge.json', scope)
 
 # authorize the clientsheet 
@@ -14,9 +15,10 @@ client = gspread.authorize(creds)
 
 # get the instance of the Spreadsheet(s)
 student_info = client.open('Student Contact Information 2020 - 2021')
+# This next url is "read only" so you can make a copy for yourself if you would like
 teacher_settings = client.open_by_url('https://docs.google.com/spreadsheets/d/1QQ0v71T-iEiSvZsJBAXpbozDkJ2uUhy2lTZHdSTrKAs')
 
-# get the correct sheet of the Spreadsheet
+# get the correct sheet/tab of the Spreadsheet by name
 mega_contact_table = student_info.worksheet("Mega Contact Table")
 
 def get_settings(teacher_settings_sheet):
@@ -129,7 +131,7 @@ def write_log(teacher_log_sheet, student, receiver, cell, assign_check, message)
 	# Assume log name is Teacher_Last_Name + 'Log' (i.e. Sindel -> Sindel Log)
 	# get_all_values only returns non-empty cells. Therefore the length of the list + 1 is the next avaliable row
 	row = len(teacher_log_sheet.get_all_values()) + 1
-	t = datetime.now().astimezone(timezone("America/Los_Angeles")).strftime('%a, %-m/%d/%y @ %-I:%M%p')
+	t = datetime.now().astimezone(timezone("America/Los_Angeles")).strftime('%a, %-m/%-d/%y @ %-I:%M%p')
 	log_list = [t, student, receiver, cell, assign_check, message]
 	teacher_log_sheet.update(f'A{row}:F{row}', [log_list])
 

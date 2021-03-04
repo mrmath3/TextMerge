@@ -1,20 +1,11 @@
 from openpyxl import load_workbook
 # from pathlib import Path # Use when on local machine
 
-# Excel Gradebook Name
+# Excel gradebook name
 gb_name = 'Test.xlsx'
-
-# Use this when on local machine
-# # get username for download folder directory
-# home = str(Path.home())
-# # directory for downloads folder and the gb_name
-# full_path = home + '/Downloads/' + gb_name
-# # open the excel file
-# wb = load_workbook(full_path)
-
-# Use this when doing work online
+# Load the gradebook
 wb = load_workbook(gb_name)
-# get the active worksheet
+# get the active worksheet (there should only be 1 even if multiple class exports)(multiple class exports are not supported)
 ws = wb.active
 
 def get_assignments(): # and max scores

@@ -1,0 +1,9 @@
+This file should be saved as an enviroment varible (i.e. a file named '.env' if you used repl.it)
+You might have to manually commit each environment variable depending on your system
+Start example:
+
+teacher1_email = 'name1@domain.org'
+teacher1_app_pass = 'abcdefghijklm'
+
+teacher2_email = 'name2@domain.org'
+teacher2_app_pass = 'nopqrstuvwxyz'

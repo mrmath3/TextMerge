@@ -4,6 +4,11 @@ from google_sheets import database, teacher_settings, get_settings, write_log
 from low_grades import get_low_grades
 from send_text import send_text_message
 
+# List of teachers to check (names should match the names of the tabs in the 'teacher settings' Google Spreadsheet)
+teacher_list = [
+	'Sindel'
+]
+
 # Should messages be printed to the console?
 print_message = False
 # This is mainly for testing purposes within the code
@@ -78,7 +83,7 @@ statements = {
 	}
 }
 
-def custom_message(parent_type, poss_student, database, low_grades, low_student, settings, log, assign_check):
+def custom_message(parent_type, poss_student, database, low_grades, low_student, settings, log, assign_check, teacher):
 	title = titles[parent_type]
 	student_first_name = database[poss_student][database[0].index('Student\'s First Name')]
 	student_last_name = database[poss_student][database[0].index('Student\'s Last Name')]	
@@ -102,11 +107,11 @@ def custom_message(parent_type, poss_student, database, low_grades, low_student,
 		# Contact me
 		message += statements['contact'][parent_or_student][language]
 		if print_message == True: print(message)
-		if actually_send_text == True: send_text_message(database[poss_student][database[0].index(f'{title}\'s Cell SMS')], message)
+		if actually_send_text == True: send_text_message(database[poss_student][database[0].index(f'{title}\'s Cell SMS')], message, teacher)
 		recipient = function_statements('recipient', parent_or_student, language, student_first_name, student_full, parent_type, individual_name, low_grades, low_student, nth_assignment)
 		if send_log == True: write_log(log, student_full, recipient, cell, assign_check, message)
 
-def textMerge(sc, teacher):
+def textMerge(teacher):
 	# the input for this function needs to be the name of the tab in Google Sheets for the teacher
 	settings = get_settings(teacher_settings.worksheet(teacher))
 	if settings['send_message'] == True:
@@ -121,23 +126,31 @@ def textMerge(sc, teacher):
 				if low_grades[low_student][0] == database[poss_student][database[0].index('Aeries Identifier')]:
 					# Should guardians be messaged?
 					if (settings['contact_parent'] == True):
-						custom_message('dad', poss_student, database, low_grades, low_student, settings, log, assign_check)
-						custom_message('mom', poss_student, database, low_grades, low_student, settings, log, assign_check)
-						custom_message('guardian', poss_student, database, low_grades, low_student, settings, log, assign_check)
+						custom_message('dad', poss_student, database, low_grades, low_student, settings, log, assign_check, teacher)
+						custom_message('mom', poss_student, database, low_grades, low_student, settings, log, assign_check, teacher)
+						custom_message('guardian', poss_student, database, low_grades, low_student, settings, log, assign_check, teacher)
 					# Should student be messaged?
 					if (settings['contact_student'] == True):
 						# Send a message to the student
 						# Check if student's phone number is on file
 						if database[poss_student][database[0].index('Student\'s Cell SMS')] != None:
-							custom_message('student', poss_student, database, low_grades, low_student, settings, log, assign_check)
+							custom_message('student', poss_student, database, low_grades, low_student, settings, log, assign_check, teacher)
 		# Uncheck the 'Send Messages?' Box in teacher settings
 		teacher_settings.worksheet(teacher).update('B18', False)
 		if print_message == True: print('--------------------------------')
-		print(f'Successfully ran textMerge for {teacher} in {(time.time() - function_start_time):.2f} seconds')
-	s.enter(wait, 1, textMerge, (sc, 'Sindel'))
+		print(f'Successfully ran textMerge for {teacher} in {(time.time() - function_start_time):.2f} seconds.')
 
+def check_teachers(sc, teacher_list):
+	check_time = time.time()
+	for teacher in teacher_list:
+		print(f'Checking {teacher}...')
+		textMerge(teacher)
+	print(f'Completed check in {(time.time() - check_time):.2f} seconds. Waiting {(wait / 60):.0f} minutes until the next check.')
+	s.enter(wait, 1, textMerge, (sc, teacher_list))
+
+print(f'Running TextMerge for the following list of teachers: {list_to_string(teacher_list)}.')
 s = sched.scheduler(time.time, time.sleep)
-s.enter(0, 1, textMerge, (s,'Sindel'))
+s.enter(0, 1, check_teachers, (s,teacher_list))
 s.run()
 
 # print(f'TextMerge took {(time.time() - main_start_time):.2f} seconds to run')
